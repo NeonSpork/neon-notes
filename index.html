@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#120e1f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>neon notes</title>
+
+
+  <!-- External Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
+
+
+  <style>
+    :root {
+      /* Dark Theme (Default) */
+      --bg: #120e1f;
+      --surface: #1b152d;
+      --surface-variant: #261f3e;
+      --accent-lavender: #b39ddb;
+      --accent-amber: #ffca28;
+      --on-surface: #ede7f6;
+      --on-surface-muted: #958da5;
+      --outline: #382d54;
+      --danger: #ef5350;
+      --radius: 12px;
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+
+    [data-theme="light"] {
+      --bg: #f4f1f8;
+      --surface: #ffffff;
+      --surface-variant: #e8e2f0;
+      --accent-lavender: #673ab7;
+      --accent-amber: #d97706;
+      --on-surface: #1d192b;
+      --on-surface-muted: #79747e;
+      --outline: #d0c9d9;
+      --danger: #d32f2f;
+    }
+
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+
+    body {
+      background-color: var(--bg);
+      color: var(--on-surface);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+      overflow-x: hidden;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+
+    /* --- Views --- */
+    .view {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 24px 16px;
+      padding-top: calc(24px + env(safe-area-inset-top));
+    }
+
+
+    .view.active {
+      display: flex;
+    }
+
+
+    /* --- Headers --- */
+    header {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+
+    .app-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+
+    .header-titles h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: lowercase;
+      color: var(--on-surface);
+    }
+
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+
+    .icon-btn {
+      background: var(--surface);
+      color: var(--accent-lavender);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius);
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+
+    .icon-btn:active {
+      opacity: 0.8;
+      transform: scale(0.96);
+    }
+
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+
+    /* --- Notes & Trash Lists --- */
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+
+    .note-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+
+    .note-card:active {
+      background: var(--surface-variant);
+      border-color: var(--accent-lavender);
+    }
+
+
+    .note-info {
+      flex: 1;
+      overflow: hidden;
+      padding-right: 12px;
+    }
+
+
+    .note-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+
+    .note-date {
+      font-size: 0.75rem;
+      color: var(--on-surface-muted);
+    }
+
+
+    .empty-state {
+      text-align: center;
+      color: var(--on-surface-muted);
+      margin-top: 60px;
+      font-size: 0.95rem;
+      text-transform: lowercase;
+    }
+
+
+    /* --- Editor View --- */
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+
+    .save-indicator {
+      font-size: 0.75rem;
+      color: var(--accent-amber);
+      opacity: 0;
+      transition: opacity 0.3s;
+      margin-right: 8px;
+    }
+
+
+    .save-indicator.visible {
+      opacity: 1;
+    }
+
+
+    .editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+
+    input.title-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--outline);
+      color: var(--accent-amber);
+      font-family: var(--font-family);
+      font-size: 1.25rem;
+      font-weight: 700;
+      padding: 8px 0;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+
+    input.title-input::placeholder {
+      color: var(--on-surface-muted);
+      opacity: 0.6;
+    }
+
+
+    textarea.body-textarea {
+      flex: 1;
+      width: 100%;
+      min-height: calc(100vh - 180px);
+      background: transparent;
+      border: none;
+      color: var(--on-surface);
+      font-family: var(--font-family);
+      font-size: 1.05rem;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+
+    textarea.body-textarea::placeholder {
+      color: var(--on-surface-muted);
+      opacity: 0.6;
+    }
+
+
+    /* --- Settings Panel --- */
+    .settings-section {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    .setting-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+
+
+    .setting-sublabel {
+      font-size: 0.75rem;
+      color: var(--on-surface-muted);
+      margin-top: 2px;
+    }
+
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+    }
+
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--surface-variant);
+      border: 1px solid var(--outline);
+      transition: .3s;
+      border-radius: 26px;
+    }
+
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--on-surface-muted);
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+
+    input:checked + .slider {
+      background-color: var(--accent-lavender);
+    }
+
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+      background-color: #fff;
+    }
+
+
+    /* --- Modal Dialogs --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: var(--radius);
+      padding: 20px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+    }
+
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--on-surface);
+    }
+
+
+    .modal-desc {
+      font-size: 0.85rem;
+      color: var(--on-surface-muted);
+      margin-bottom: 20px;
+    }
+
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+
+    .btn {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--outline);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--on-surface);
+    }
+
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+
+
+    .btn-accent {
+      background: var(--accent-lavender);
+      color: #fff;
+      border-color: var(--accent-lavender);
+    }
+  </style>
+</head>
+<body>
+
+
+  <!-- VIEW 1: Notes List View -->
+  <div class="view active" id="listView">
+    <header>
+      <div class="header-left">
+        <img src="./icon.svg" class="app-icon" alt="neon notes icon">
+        <div class="header-titles">
+          <h1>neon notes</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="openSettingsView()" aria-label="Settings">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <button class="icon-btn" onclick="createNewNote()" aria-label="New Note">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+
+    <div class="notes-list" id="notesList"></div>
+    <div class="empty-state" id="emptyState" style="display: none;">no notes yet. tap + to write one.</div>
+  </div>
+
+
+  <!-- VIEW 2: Minimalist Editor View -->
+  <div class="view" id="editorView">
+    <div class="editor-header">
+      <button class="icon-btn" onclick="closeEditor()" aria-label="Back">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+
+
+      <div style="display: flex; align-items: center;">
+        <span class="save-indicator" id="saveIndicator">saved</span>
+        <div class="editor-actions">
+          <button class="icon-btn" onclick="shareCurrentNote()" aria-label="Share">
+            <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </button>
+          <button class="icon-btn" style="color: var(--danger);" onclick="promptDeleteNote()" aria-label="Delete">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="editor-container">
+      <input type="text" class="title-input" id="noteTitleInput" placeholder="Title..." autocomplete="off">
+      <textarea class="body-textarea" id="noteTextarea" placeholder="Start typing..." autocomplete="off"></textarea>
+    </div>
+  </div>
+
+
+  <!-- VIEW 3: Settings & Trash View -->
+  <div class="view" id="settingsView">
+    <div class="editor-header">
+      <button class="icon-btn" onclick="showListView()" aria-label="Back">
+        <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <h2 style="font-size: 1.1rem; text-transform: lowercase;">settings</h2>
+      <div style="width: 40px;"></div>
+    </div>
+
+
+    <div class="settings-section">
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">light mode</div>
+          <div class="setting-sublabel">switch between dark and light themes</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="themeToggle" onchange="toggleTheme(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">keep screen awake</div>
+          <div class="setting-sublabel">prevent screen timeout while editing notes</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="keepAliveToggle" onchange="toggleKeepAlive(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+
+    <h3 style="font-size: 0.95rem; text-transform: lowercase; color: var(--on-surface-muted); margin-bottom: 12px; margin-top: 8px;">trash bin (auto-purges after 7 days)</h3>
+    <div class="notes-list" id="trashList"></div>
+    <div class="empty-state" id="trashEmptyState" style="display: none; margin-top: 30px;">trash is empty.</div>
+  </div>
+
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+      <div class="modal-title">move to trash?</div>
+      <div class="modal-desc">this note will stay in the trash for 7 days before permanent deletion.</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteNote()">move to trash</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const STORAGE_NOTES_KEY = 'neon_notes_pwa_items_v1';
+    const STORAGE_TRASH_KEY = 'neon_notes_pwa_trash_v1';
+    const STORAGE_SETTINGS_KEY = 'neon_notes_pwa_settings_v1';
+
+
+    let notes = JSON.parse(localStorage.getItem(STORAGE_NOTES_KEY)) || [];
+    let trash = JSON.parse(localStorage.getItem(STORAGE_TRASH_KEY)) || [];
+    let settings = JSON.parse(localStorage.getItem(STORAGE_SETTINGS_KEY)) || { lightTheme: false, keepAlive: false };
+
+
+    let currentNoteId = null;
+    let saveTimeout = null;
+    let wakeLock = null;
+
+
+    // --- System Init & Auto Purge ---
+    function initApp() {
+      applyTheme(settings.lightTheme);
+      document.getElementById('themeToggle').checked = settings.lightTheme;
+      document.getElementById('keepAliveToggle').checked = settings.keepAlive;
+      purgeOldTrash();
+      renderNotesList();
+    }
+
+
+    function purgeOldTrash() {
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      trash = trash.filter(item => (now - item.deletedAt) < SEVEN_DAYS_MS);
+      localStorage.setItem(STORAGE_TRASH_KEY, JSON.stringify(trash));
+    }
+
+
+    // --- Navigation ---
+    function showListView() {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('listView').classList.add('active');
+      releaseWakeLock();
+      renderNotesList();
+    }
+
+
+    function showEditorView() {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('editorView').classList.add('active');
+      if (settings.keepAlive) requestWakeLock();
+    }
+
+
+    function openSettingsView() {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById('settingsView').classList.add('active');
+      renderTrashList();
+    }
+
+
+    // --- Note Actions ---
+    function createNewNote() {
+      const newNote = {
+        id: Date.now().toString(),
+        title: '',
+        text: '',
+        updatedAt: Date.now()
+      };
+      notes.unshift(newNote);
+      saveNotes();
+      openNote(newNote.id);
+    }
+
+
+    function openNote(id) {
+      currentNoteId = id;
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+
+
+      document.getElementById('noteTitleInput').value = note.title;
+      document.getElementById('noteTextarea').value = note.text;
+      showEditorView();
+    }
+
+
+    function closeEditor() {
+      saveCurrentNoteImmediately();
+      
+      // Auto-discard completely empty notes (no title & no text)
+      notes = notes.filter(n => !(n.title.trim() === '' && n.text.trim() === ''));
+      saveNotes();
+      showListView();
+    }
+
+
+    // --- Delete & Trash Logic ---
+    function promptDeleteNote() {
+      document.getElementById('deleteModal').classList.add('active');
+    }
+
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('active');
+    }
+
+
+    function confirmDeleteNote() {
+      closeDeleteModal();
+      if (!currentNoteId) return;
+
+
+      const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+      if (noteIndex !== -1) {
+        const [deletedNote] = notes.splice(noteIndex, 1);
+        deletedNote.deletedAt = Date.now();
+        trash.unshift(deletedNote);
+        saveNotes();
+        localStorage.setItem(STORAGE_TRASH_KEY, JSON.stringify(trash));
+      }
+      showListView();
+    }
+
+
+    function restoreFromTrash(id) {
+      const trashIndex = trash.findIndex(t => t.id === id);
+      if (trashIndex !== -1) {
+        const [restoredNote] = trash.splice(trashIndex, 1);
+        delete restoredNote.deletedAt;
+        notes.unshift(restoredNote);
+        saveNotes();
+        localStorage.setItem(STORAGE_TRASH_KEY, JSON.stringify(trash));
+        renderTrashList();
+      }
+    }
+
+
+    // --- Auto-Save ---
+    function saveNotes() {
+      localStorage.setItem(STORAGE_NOTES_KEY, JSON.stringify(notes));
+    }
+
+
+    function saveCurrentNoteImmediately() {
+      if (!currentNoteId) return;
+      const titleInput = document.getElementById('noteTitleInput');
+      const textarea = document.getElementById('noteTextarea');
+      
+      const note = notes.find(n => n.id === currentNoteId);
+      if (note) {
+        note.title = titleInput.value;
+        note.text = textarea.value;
+        note.updatedAt = Date.now();
+        saveNotes();
+      }
+    }
+
+
+    function triggerAutoSave() {
+      const indicator = document.getElementById('saveIndicator');
+      indicator.classList.add('visible');
+
+
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveCurrentNoteImmediately();
+        setTimeout(() => {
+          indicator.classList.remove('visible');
+        }, 800);
+      }, 300);
+    }
+
+
+    // --- Native Share ---
+    async function shareCurrentNote() {
+      saveCurrentNoteImmediately();
+      const textarea = document.getElementById('noteTextarea');
+      const titleInput = document.getElementById('noteTitleInput');
+      const text = textarea.value.trim();
+
+
+      if (!text && !titleInput.value) return;
+
+
+      const title = getEffectiveTitle({ title: titleInput.value, text: text });
+      const fullText = `${title}\n\n${text}`;
+
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: title, text: fullText });
+        } catch (err) {}
+      } else {
+        navigator.clipboard.writeText(fullText);
+        alert('Note copied to clipboard!');
+      }
+    }
+
+
+    // --- Helpers ---
+    function getEffectiveTitle(note) {
+      if (note.title && note.title.trim() !== '') {
+        return note.title.trim();
+      }
+      if (note.text && note.text.trim() !== '') {
+        const words = note.text.trim().split(/\s+/).slice(0, 3).join(' ');
+        return words || 'untitled note';
+      }
+      return 'untitled note';
+    }
+
+
+    // --- Settings Toggles ---
+    function applyTheme(isLight) {
+      if (isLight) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+
+    function toggleTheme(isLight) {
+      settings.lightTheme = isLight;
+      localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
+      applyTheme(isLight);
+    }
+
+
+    function toggleKeepAlive(enabled) {
+      settings.keepAlive = enabled;
+      localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
+      if (!enabled) releaseWakeLock();
+    }
+
+
+    async function requestWakeLock() {
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+        } catch (err) {}
+      }
+    }
+
+
+    function releaseWakeLock() {
+      if (wakeLock) {
+        wakeLock.release().then(() => { wakeLock = null; });
+      }
+    }
+
+
+    // --- DOM Rendering ---
+    function renderNotesList() {
+      const listEl = document.getElementById('notesList');
+      const emptyEl = document.getElementById('emptyState');
+      listEl.innerHTML = '';
+
+
+      if (notes.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+
+      // Most recently edited on top
+      notes.sort((a, b) => b.updatedAt - a.updatedAt);
+
+
+      notes.forEach(note => {
+        const displayTitle = getEffectiveTitle(note);
+        const formattedDate = new Date(note.updatedAt).toLocaleDateString(undefined, {
+          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+
+
+        const card = document.createElement('div');
+        card.className = 'note-card';
+        card.onclick = () => openNote(note.id);
+        card.innerHTML = `
+          <div class="note-info">
+            <div class="note-title">${escapeHtml(displayTitle)}</div>
+            <div class="note-date">${formattedDate}</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--on-surface-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+
+    function renderTrashList() {
+      const listEl = document.getElementById('trashList');
+      const emptyEl = document.getElementById('trashEmptyState');
+      listEl.innerHTML = '';
+
+
+      if (trash.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+
+      trash.forEach(note => {
+        const displayTitle = getEffectiveTitle(note);
+        const card = document.createElement('div');
+        card.className = 'note-card';
+        card.innerHTML = `
+          <div class="note-info">
+            <div class="note-title">${escapeHtml(displayTitle)}</div>
+            <div class="note-date">deleted ${new Date(note.deletedAt).toLocaleDateString()}</div>
+          </div>
+          <button class="btn btn-accent" style="padding: 6px 10px; font-size: 0.75rem;" onclick="restoreFromTrash('${note.id}')">restore</button>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+
+    // --- Event Listeners ---
+    const titleInput = document.getElementById('noteTitleInput');
+    const bodyTextarea = document.getElementById('noteTextarea');
+
+
+    titleInput.addEventListener('input', triggerAutoSave);
+    bodyTextarea.addEventListener('input', triggerAutoSave);
+
+
+    // Enter in title field jumps directly to body
+    titleInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        bodyTextarea.focus();
+      }
+    });
+
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+
+    initApp();
+  </script>
+</body>
+</html>
