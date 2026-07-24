@@ -1,8 +1,9 @@
 {
+  "id": "/neon-notes/",
   "name": "neon notes",
   "short_name": "neon notes",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/neon-notes/index.html",
+  "scope": "/neon-notes/",
   "display": "standalone",
   "background_color": "#120e1f",
   "theme_color": "#120e1f",
