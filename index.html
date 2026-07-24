@@ -9,15 +9,13 @@
   <title>neon notes</title>
 
 
-  <!-- External Manifest & Icons -->
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./icon.svg">
   <link rel="apple-touch-icon" href="./icon.svg">
 
 
   <style>
     :root {
-      /* Dark Theme (Default) */
       --bg: #120e1f;
       --surface: #1b152d;
       --surface-variant: #261f3e;
@@ -45,13 +43,7 @@
     }
 
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
 
 
     body {
@@ -68,7 +60,6 @@
     }
 
 
-    /* --- Views --- */
     .view {
       display: none;
       flex-direction: column;
@@ -78,46 +69,14 @@
     }
 
 
-    .view.active {
-      display: flex;
-    }
+    .view.active { display: flex; }
 
 
-    /* --- Headers --- */
-    header {
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-
-    .app-icon {
-      width: 32px;
-      height: 32px;
-    }
-
-
-    .header-titles h1 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: lowercase;
-      color: var(--on-surface);
-    }
-
-
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
+    header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .app-icon { width: 32px; height: 32px; }
+    .header-titles h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; text-transform: lowercase; }
+    .header-actions { display: flex; gap: 8px; }
 
 
     .icon-btn {
@@ -127,334 +86,99 @@
       border-radius: var(--radius);
       padding: 10px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       transition: all 0.2s ease;
     }
 
 
-    .icon-btn:active {
-      opacity: 0.8;
-      transform: scale(0.96);
-    }
+    .icon-btn:active { opacity: 0.8; transform: scale(0.96); }
+    .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 
-    .icon-btn svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-
-    /* --- Notes & Trash Lists --- */
-    .notes-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-
+    .notes-list { display: flex; flex-direction: column; gap: 10px; }
     .note-card {
       background: var(--surface);
       border: 1px solid var(--outline);
       border-radius: var(--radius);
       padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       cursor: pointer;
-      transition: all 0.2s;
     }
 
 
-    .note-card:active {
-      background: var(--surface-variant);
-      border-color: var(--accent-lavender);
-    }
+    .note-info { flex: 1; overflow: hidden; padding-right: 12px; }
+    .note-title { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+    .note-date { font-size: 0.75rem; color: var(--on-surface-muted); }
+    .empty-state { text-align: center; color: var(--on-surface-muted); margin-top: 60px; font-size: 0.95rem; text-transform: lowercase; }
 
 
-    .note-info {
-      flex: 1;
-      overflow: hidden;
-      padding-right: 12px;
-    }
+    .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .editor-actions { display: flex; gap: 8px; }
+    .save-indicator { font-size: 0.75rem; color: var(--accent-amber); opacity: 0; transition: opacity 0.3s; margin-right: 8px; }
+    .save-indicator.visible { opacity: 1; }
 
 
-    .note-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--on-surface);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 4px;
-    }
-
-
-    .note-date {
-      font-size: 0.75rem;
-      color: var(--on-surface-muted);
-    }
-
-
-    .empty-state {
-      text-align: center;
-      color: var(--on-surface-muted);
-      margin-top: 60px;
-      font-size: 0.95rem;
-      text-transform: lowercase;
-    }
-
-
-    /* --- Editor View --- */
-    .editor-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-
-    .editor-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-
-    .save-indicator {
-      font-size: 0.75rem;
-      color: var(--accent-amber);
-      opacity: 0;
-      transition: opacity 0.3s;
-      margin-right: 8px;
-    }
-
-
-    .save-indicator.visible {
-      opacity: 1;
-    }
-
-
-    .editor-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-
+    .editor-container { flex: 1; display: flex; flex-direction: column; gap: 12px; }
     input.title-input {
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid var(--outline);
-      color: var(--accent-amber);
-      font-family: var(--font-family);
-      font-size: 1.25rem;
-      font-weight: 700;
-      padding: 8px 0;
-      outline: none;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-
-    input.title-input::placeholder {
-      color: var(--on-surface-muted);
-      opacity: 0.6;
+      background: transparent; border: none; border-bottom: 1px solid var(--outline);
+      color: var(--accent-amber); font-family: var(--font-family); font-size: 1.25rem; font-weight: 700;
+      padding: 8px 0; outline: none; user-select: text; -webkit-user-select: text;
     }
 
 
     textarea.body-textarea {
-      flex: 1;
-      width: 100%;
-      min-height: calc(100vh - 180px);
-      background: transparent;
-      border: none;
-      color: var(--on-surface);
-      font-family: var(--font-family);
-      font-size: 1.05rem;
-      line-height: 1.6;
-      resize: none;
-      outline: none;
-      user-select: text;
-      -webkit-user-select: text;
+      flex: 1; width: 100%; min-height: calc(100vh - 180px); background: transparent; border: none;
+      color: var(--on-surface); font-family: var(--font-family); font-size: 1.05rem; line-height: 1.6;
+      resize: none; outline: none; user-select: text; -webkit-user-select: text;
     }
 
 
-    textarea.body-textarea::placeholder {
-      color: var(--on-surface-muted);
-      opacity: 0.6;
-    }
-
-
-    /* --- Settings Panel --- */
     .settings-section {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      background: var(--surface); border: 1px solid var(--outline); border-radius: var(--radius);
+      padding: 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 16px;
     }
+    .setting-item { display: flex; justify-content: space-between; align-items: center; }
+    .setting-label { font-size: 0.95rem; font-weight: 600; }
+    .setting-sublabel { font-size: 0.75rem; color: var(--on-surface-muted); margin-top: 2px; }
 
 
-    .setting-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-
-    .setting-label {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--on-surface);
-    }
-
-
-    .setting-sublabel {
-      font-size: 0.75rem;
-      color: var(--on-surface-muted);
-      margin-top: 2px;
-    }
-
-
-    .toggle-switch {
-      position: relative;
-      width: 48px;
-      height: 26px;
-    }
-
-
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-
+    .toggle-switch { position: relative; width: 48px; height: 26px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: var(--surface-variant);
-      border: 1px solid var(--outline);
-      transition: .3s;
-      border-radius: 26px;
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--surface-variant); border: 1px solid var(--outline); transition: .3s; border-radius: 26px;
     }
-
-
     .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 3px;
-      bottom: 3px;
-      background-color: var(--on-surface-muted);
-      transition: .3s;
-      border-radius: 50%;
+      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background-color: var(--on-surface-muted); transition: .3s; border-radius: 50%;
     }
+    input:checked + .slider { background-color: var(--accent-lavender); }
+    input:checked + .slider:before { transform: translateX(22px); background-color: #fff; }
 
 
-    input:checked + .slider {
-      background-color: var(--accent-lavender);
-    }
-
-
-    input:checked + .slider:before {
-      transform: translateX(22px);
-      background-color: #fff;
-    }
-
-
-    /* --- Modal Dialogs --- */
     .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); z-index: 100;
+      align-items: center; justify-content: center; padding: 24px;
     }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: var(--surface); border: 1px solid var(--outline); border-radius: var(--radius); padding: 20px; width: 100%; max-width: 320px; text-align: center; }
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .modal-desc { font-size: 0.85rem; color: var(--on-surface-muted); margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 8px; }
+    .btn { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--outline); font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+    .btn-secondary { background: transparent; color: var(--on-surface); }
+    .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-accent { background: var(--accent-lavender); color: #fff; border-color: var(--accent-lavender); }
 
 
-    .modal-overlay.active {
-      display: flex;
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--surface-variant); color: var(--on-surface); border: 1px solid var(--outline);
+      padding: 10px 18px; border-radius: 20px; font-size: 0.85rem; pointer-events: none; opacity: 0;
+      transition: all 0.25s cubic-bezier(0.1, 0.9, 0.2, 1); z-index: 200; text-transform: lowercase;
     }
-
-
-    .modal-box {
-      background: var(--surface);
-      border: 1px solid var(--outline);
-      border-radius: var(--radius);
-      padding: 20px;
-      width: 100%;
-      max-width: 320px;
-      text-align: center;
-    }
-
-
-    .modal-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--on-surface);
-    }
-
-
-    .modal-desc {
-      font-size: 0.85rem;
-      color: var(--on-surface-muted);
-      margin-bottom: 20px;
-    }
-
-
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-
-    .btn {
-      flex: 1;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--outline);
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--on-surface);
-    }
-
-
-    .btn-danger {
-      background: var(--danger);
-      color: #fff;
-      border-color: var(--danger);
-    }
-
-
-    .btn-accent {
-      background: var(--accent-lavender);
-      color: #fff;
-      border-color: var(--accent-lavender);
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
 </head>
 <body>
@@ -465,9 +189,7 @@
     <header>
       <div class="header-left">
         <img src="./icon.svg" class="app-icon" alt="neon notes icon">
-        <div class="header-titles">
-          <h1>neon notes</h1>
-        </div>
+        <div class="header-titles"><h1>neon notes</h1></div>
       </div>
       <div class="header-actions">
         <button class="icon-btn" onclick="openSettingsView()" aria-label="Settings">
@@ -485,7 +207,7 @@
   </div>
 
 
-  <!-- VIEW 2: Minimalist Editor View -->
+  <!-- VIEW 2: Editor View -->
   <div class="view" id="editorView">
     <div class="editor-header">
       <button class="icon-btn" onclick="closeEditor()" aria-label="Back">
@@ -514,7 +236,7 @@
   </div>
 
 
-  <!-- VIEW 3: Settings & Trash View -->
+  <!-- VIEW 3: Settings View -->
   <div class="view" id="settingsView">
     <div class="editor-header">
       <button class="icon-btn" onclick="showListView()" aria-label="Back">
@@ -557,7 +279,7 @@
   </div>
 
 
-  <!-- Delete Confirmation Modal -->
+  <!-- Modal -->
   <div class="modal-overlay" id="deleteModal">
     <div class="modal-box">
       <div class="modal-title">move to trash?</div>
@@ -568,6 +290,9 @@
       </div>
     </div>
   </div>
+
+
+  <div class="toast" id="exitToast">swipe back again to exit</div>
 
 
   <script>
@@ -586,13 +311,84 @@
     let wakeLock = null;
 
 
-    // --- System Init & Auto Purge ---
+    let currentView = 'listView';
+    let lastBackTime = 0;
+    let toastTimeout = null;
+
+
     function initApp() {
       applyTheme(settings.lightTheme);
       document.getElementById('themeToggle').checked = settings.lightTheme;
       document.getElementById('keepAliveToggle').checked = settings.keepAlive;
       purgeOldTrash();
       renderNotesList();
+
+
+      history.replaceState({ view: 'listView' }, '');
+    }
+
+
+    // Native Back Interceptor
+    window.addEventListener('popstate', (e) => {
+      if (currentView === 'editorView') {
+        saveCurrentNoteImmediately();
+        notes = notes.filter(n => !(n.title.trim() === '' && n.text.trim() === ''));
+        saveNotes();
+        setActiveViewDOM('listView');
+        renderNotesList();
+        releaseWakeLock();
+      } else if (currentView === 'settingsView') {
+        setActiveViewDOM('listView');
+        renderNotesList();
+      } else if (currentView === 'listView') {
+        const now = Date.now();
+        if (now - lastBackTime < 2000) {
+          history.back();
+        } else {
+          lastBackTime = now;
+          history.pushState({ view: 'listView' }, '');
+          showExitToast();
+        }
+      }
+    });
+
+
+    function showExitToast() {
+      const toast = document.getElementById('exitToast');
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    }
+
+
+    function setActiveViewDOM(viewId) {
+      currentView = viewId;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+    }
+
+
+    function showListView() {
+      if (currentView !== 'listView') {
+        setActiveViewDOM('listView');
+        renderNotesList();
+        releaseWakeLock();
+        history.back();
+      }
+    }
+
+
+    function showEditorView() {
+      setActiveViewDOM('editorView');
+      history.pushState({ view: 'editorView' }, '');
+      if (settings.keepAlive) requestWakeLock();
+    }
+
+
+    function openSettingsView() {
+      setActiveViewDOM('settingsView');
+      history.pushState({ view: 'settingsView' }, '');
+      renderTrashList();
     }
 
 
@@ -604,37 +400,8 @@
     }
 
 
-    // --- Navigation ---
-    function showListView() {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('listView').classList.add('active');
-      releaseWakeLock();
-      renderNotesList();
-    }
-
-
-    function showEditorView() {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('editorView').classList.add('active');
-      if (settings.keepAlive) requestWakeLock();
-    }
-
-
-    function openSettingsView() {
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById('settingsView').classList.add('active');
-      renderTrashList();
-    }
-
-
-    // --- Note Actions ---
     function createNewNote() {
-      const newNote = {
-        id: Date.now().toString(),
-        title: '',
-        text: '',
-        updatedAt: Date.now()
-      };
+      const newNote = { id: Date.now().toString(), title: '', text: '', updatedAt: Date.now() };
       notes.unshift(newNote);
       saveNotes();
       openNote(newNote.id);
@@ -645,40 +412,22 @@
       currentNoteId = id;
       const note = notes.find(n => n.id === id);
       if (!note) return;
-
-
       document.getElementById('noteTitleInput').value = note.title;
       document.getElementById('noteTextarea').value = note.text;
       showEditorView();
     }
 
 
-    function closeEditor() {
-      saveCurrentNoteImmediately();
-      
-      // Auto-discard completely empty notes (no title & no text)
-      notes = notes.filter(n => !(n.title.trim() === '' && n.text.trim() === ''));
-      saveNotes();
-      showListView();
-    }
+    function closeEditor() { history.back(); }
 
 
-    // --- Delete & Trash Logic ---
-    function promptDeleteNote() {
-      document.getElementById('deleteModal').classList.add('active');
-    }
-
-
-    function closeDeleteModal() {
-      document.getElementById('deleteModal').classList.remove('active');
-    }
+    function promptDeleteNote() { document.getElementById('deleteModal').classList.add('active'); }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
 
 
     function confirmDeleteNote() {
       closeDeleteModal();
       if (!currentNoteId) return;
-
-
       const noteIndex = notes.findIndex(n => n.id === currentNoteId);
       if (noteIndex !== -1) {
         const [deletedNote] = notes.splice(noteIndex, 1);
@@ -687,7 +436,7 @@
         saveNotes();
         localStorage.setItem(STORAGE_TRASH_KEY, JSON.stringify(trash));
       }
-      showListView();
+      closeEditor();
     }
 
 
@@ -704,17 +453,13 @@
     }
 
 
-    // --- Auto-Save ---
-    function saveNotes() {
-      localStorage.setItem(STORAGE_NOTES_KEY, JSON.stringify(notes));
-    }
+    function saveNotes() { localStorage.setItem(STORAGE_NOTES_KEY, JSON.stringify(notes)); }
 
 
     function saveCurrentNoteImmediately() {
       if (!currentNoteId) return;
       const titleInput = document.getElementById('noteTitleInput');
       const textarea = document.getElementById('noteTextarea');
-      
       const note = notes.find(n => n.id === currentNoteId);
       if (note) {
         note.title = titleInput.value;
@@ -728,37 +473,24 @@
     function triggerAutoSave() {
       const indicator = document.getElementById('saveIndicator');
       indicator.classList.add('visible');
-
-
       clearTimeout(saveTimeout);
       saveTimeout = setTimeout(() => {
         saveCurrentNoteImmediately();
-        setTimeout(() => {
-          indicator.classList.remove('visible');
-        }, 800);
+        setTimeout(() => { indicator.classList.remove('visible'); }, 800);
       }, 300);
     }
 
 
-    // --- Native Share ---
     async function shareCurrentNote() {
       saveCurrentNoteImmediately();
       const textarea = document.getElementById('noteTextarea');
       const titleInput = document.getElementById('noteTitleInput');
       const text = textarea.value.trim();
-
-
       if (!text && !titleInput.value) return;
-
-
       const title = getEffectiveTitle({ title: titleInput.value, text: text });
       const fullText = `${title}\n\n${text}`;
-
-
       if (navigator.share) {
-        try {
-          await navigator.share({ title: title, text: fullText });
-        } catch (err) {}
+        try { await navigator.share({ title: title, text: fullText }); } catch (err) {}
       } else {
         navigator.clipboard.writeText(fullText);
         alert('Note copied to clipboard!');
@@ -766,26 +498,16 @@
     }
 
 
-    // --- Helpers ---
     function getEffectiveTitle(note) {
-      if (note.title && note.title.trim() !== '') {
-        return note.title.trim();
-      }
-      if (note.text && note.text.trim() !== '') {
-        const words = note.text.trim().split(/\s+/).slice(0, 3).join(' ');
-        return words || 'untitled note';
-      }
+      if (note.title && note.title.trim() !== '') return note.title.trim();
+      if (note.text && note.text.trim() !== '') return note.text.trim().split(/\s+/).slice(0, 3).join(' ') || 'untitled note';
       return 'untitled note';
     }
 
 
-    // --- Settings Toggles ---
     function applyTheme(isLight) {
-      if (isLight) {
-        document.documentElement.setAttribute('data-theme', 'light');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-      }
+      if (isLight) document.documentElement.setAttribute('data-theme', 'light');
+      else document.documentElement.removeAttribute('data-theme');
     }
 
 
@@ -805,45 +527,28 @@
 
     async function requestWakeLock() {
       if ('wakeLock' in navigator) {
-        try {
-          wakeLock = await navigator.wakeLock.request('screen');
-        } catch (err) {}
+        try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
       }
     }
 
 
     function releaseWakeLock() {
-      if (wakeLock) {
-        wakeLock.release().then(() => { wakeLock = null; });
-      }
+      if (wakeLock) { wakeLock.release().then(() => { wakeLock = null; }); }
     }
 
 
-    // --- DOM Rendering ---
     function renderNotesList() {
       const listEl = document.getElementById('notesList');
       const emptyEl = document.getElementById('emptyState');
       listEl.innerHTML = '';
-
-
-      if (notes.length === 0) {
-        emptyEl.style.display = 'block';
-        return;
-      }
+      if (notes.length === 0) { emptyEl.style.display = 'block'; return; }
       emptyEl.style.display = 'none';
 
 
-      // Most recently edited on top
       notes.sort((a, b) => b.updatedAt - a.updatedAt);
-
-
       notes.forEach(note => {
         const displayTitle = getEffectiveTitle(note);
-        const formattedDate = new Date(note.updatedAt).toLocaleDateString(undefined, {
-          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-
-
+        const formattedDate = new Date(note.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         const card = document.createElement('div');
         card.className = 'note-card';
         card.onclick = () => openNote(note.id);
@@ -863,12 +568,7 @@
       const listEl = document.getElementById('trashList');
       const emptyEl = document.getElementById('trashEmptyState');
       listEl.innerHTML = '';
-
-
-      if (trash.length === 0) {
-        emptyEl.style.display = 'block';
-        return;
-      }
+      if (trash.length === 0) { emptyEl.style.display = 'block'; return; }
       emptyEl.style.display = 'none';
 
 
@@ -894,29 +594,12 @@
     }
 
 
-    // --- Event Listeners ---
-    const titleInput = document.getElementById('noteTitleInput');
-    const bodyTextarea = document.getElementById('noteTextarea');
+    document.getElementById('noteTitleInput').addEventListener('input', triggerAutoSave);
+    document.getElementById('noteTextarea').addEventListener('input', triggerAutoSave);
 
 
-    titleInput.addEventListener('input', triggerAutoSave);
-    bodyTextarea.addEventListener('input', triggerAutoSave);
-
-
-    // Enter in title field jumps directly to body
-    titleInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        bodyTextarea.focus();
-      }
-    });
-
-
-    // Register Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-      });
+      window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
     }
 
 
